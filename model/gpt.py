@@ -83,7 +83,7 @@ class Decoder(nn.Module):
 class GPT(nn.Module):
     def __init__(self, n_heads: int, d_ff: int, d_model: int, query_key_dim: int, values_dim: int, embedding_dim: int, drop_out: float, N: int, vocab_size: int):
         super().__init__()
-        self.decoder = Decoder(n_heads=n_heads, d_ff=d_ff, d_model=d_model, drop_out=drop_out, embedding_dim=embedding_dim, query_key_dim=query_key_dim, values_dim=values_dim, )
+        self.decoders = [Decoder(n_heads=n_heads, d_ff=d_ff, d_model=d_model, drop_out=drop_out, embedding_dim=embedding_dim, query_key_dim=query_key_dim, values_dim=values_dim) for i in range(N)]
         self.embedding = nn.Embedding(num_embeddings=vocab_size, embedding_dim=embedding_dim)
         self.fc = nn.Linear(embedding_dim, vocab_size)
         self.d_model = d_model
@@ -92,6 +92,8 @@ class GPT(nn.Module):
     def forward(self, x):
         embedded = self.embedding(x)
         positional_encoding = torch.tensor([[posenc(self.d_model, self.embedding_dim, i, 10000) for i in range(self.embedding_dim)]])
-        embedded = positional_encoding + embedded
-        decoded = self.decoder(embedded)
+        embedded = positional_encoding + embedded 
+        decoded = embedded
+        for decoder in self.decoders:
+            decoded = decoder(decoded)
         return self.fc(decoded)
