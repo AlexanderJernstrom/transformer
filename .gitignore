@@ -1,1 +1,6 @@
 .venv
+*.pkl
+*.txt
+*.pt
+*.bin
+/train
